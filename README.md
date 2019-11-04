@@ -4,7 +4,7 @@ Small syntax to fastly create projects with lots of files from 1 file.
 
 ## Installation
 
-`$ npm i -g fpp`
+`$ npm i -g fast-project-prototype`
 
 ## Usage
 
