@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+
+const fs = require("fs");
+const path = require("path");
+const yargs = require("yargs");
+const args = yargs.argv._;
+const srcFile = path.resolve(args[0]);
+const srcContents = fs.readFileSync(srcFile).toString();
+const fppParser = require(__dirname + "/../src/fpp.parser.js");
+
+try {
+	fppParser.parse(srcContents);
+} catch(error) {
+	console.log("Error from fpp (command-line):", error);
+}
+
+

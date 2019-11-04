@@ -1,0 +1,35 @@
+{
+  "name": "fast-project-prototype",
+  "version": "1.0.0",
+  "description": "Small syntax to fastly create projects with lots of files from 1 file.",
+  "bin": {
+    "fpp": "bin/fpp"
+  },
+  "main": "src/fpp.parser.js",
+  "scripts": {
+    "build": "pegjs -o src/fpp.parser.js src/fpp.pegjs",
+    "test:1": "cd test/example-1 && node generate.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fs-extra": "^8.1.0",
+    "pegjs": "^0.10.0",
+    "rimraf": "^3.0.0"
+  },
+  "devDependencies": {
+    "yargs": "^14.2.0"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/allnulled/fast-project-prototype.git"
+  },
+  "bugs": {
+    "url": "https://github.com/allnulled/fast-project-prototype/issues"
+  },
+  "homepage": "https://github.com/allnulled/fast-project-prototype#readme"
+}
