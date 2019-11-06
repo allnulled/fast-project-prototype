@@ -1,6 +1,6 @@
 {
   "name": "fast-project-prototype",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Small syntax to fastly create projects with lots of files from 1 file.",
   "bin": {
     "fpp": "bin/fpp"
