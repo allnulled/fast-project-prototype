@@ -8,7 +8,8 @@
   "main": "src/fpp.parser.js",
   "scripts": {
     "build": "pegjs -o src/fpp.parser.js src/fpp.pegjs",
-    "test:1": "cd test/example-1 && node generate.js"
+    "test:1": "cd test/example-1 && fpp myproject.fpp",
+    "test:2": "cd test/example-2 && fpp example2.fpp"
   },
   "keywords": [],
   "author": "",

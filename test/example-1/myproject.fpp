@@ -64,16 +64,213 @@
 # Filename: /script.import-dependencies.bat
 # Directory: /src
 # Directory: /src/core
-# Directory: /src/core/app
-# Directory: /src/core/app/base
+# Directory: /src/core/project
+# Directory: /src/core/project/base
+
+# Filename: /src/core/project/base/BaseProject.js
+const BaseProjectLogger = require(process.env.PROJECT_ROOT + "/core/helper/logger.js").create("BaseProjectLogger: ", ["yellow", "bold"]);
+const ErrorManager = require(process.env.PROJECT_ROOT + "/core/helper/ErrorManager.js");
+const ReflectionUtils = require(process.env.PROJECT_ROOT + "/core/helper/ReflectionUtils.js");
+const OverridableClass = require(process.env.PROJECT_ROOT + "/core/helper/OverridableClass.js");
+const BaseApp = require(process.env.PROJECT_ROOT + "/core/app/base/BaseApp.js");
+class BaseProject extends OverridableClass {
+	//////////////////////////////////////////////////////
+	static get defaultApp() {
+		throw new ErrorManager.classes.MustOverrideError("BaseProject[.constructor].defaultApp");
+	}
+	constructor(options = {}, callback = undefined) {
+		super(options, callback);
+		BaseProjectLogger.debug("BaseProject.constructor");
+		if(!this.app) {
+			this.app = this.constructor.defaultApp;
+		}
+		if(!this.app instanceof BaseApp) {
+			throw new ErrorManager.classes.RequiredTypeError("BaseProject#app must be a BaseApp instance");
+		}
+	}
+	//////////////////////////////////////////////////////
+	load(...args) {
+		BaseProjectLogger.debug("BaseProject.load");
+		return this.app.load(...args);
+	}
+	start(...args) {
+		BaseProjectLogger.debug("BaseProject.start");
+		return this.app.start(...args);
+	}
+}
+module.exports = BaseProject;
+
+# Filename: /src/core/project/Project.js
+const BaseProject = require(__dirname + "/base/BaseProject.js");
+const App = require(process.env.PROJECT_ROOT + "/core/app/App.js");
+class Project extends BaseProject {
+	static get defaultApp() {
+		return App;
+	}
+}
+module.exports = Project;
+
 # Filename: /src/core/app/base/BaseApp.js
-# Filename: /src/core/app/base/BaseRouter.js
-# Filename: /src/core/app/base/RestRouter.js
-# Filename: /src/core/app/base/CdnRouter.js
-# Filename: /src/core/app/base/LiveRouter.js
-# Filename: /src/core/app/base/ContentsRouter.js
+const ErrorManager = require(process.env.PROJECT_ROOT + "/core/helper/ErrorManager.js");
+const ReflectionUtils = require(process.env.PROJECT_ROOT + "/core/helper/ReflectionUtils.js");
+const OverridableClass = require(process.env.PROJECT_ROOT + "/core/helper/OverridableClass.js");
+const BaseRouter = require(process.env.PROJECT_ROOT + "/core/router/base/BaseRouter.js");
+class BaseApp extends OverridableClass {
+	//////////////////////////////////////////////////////
+	getMainDatabaseFile() {
+		throw new ErrorManager.classes.MustOverrideMethod("BaseApp#mainDatabaseFilepath()");
+	}
+	getOtherDatabaseFiles() {
+		return [];
+	}
+	//////////////////////////////////////////////////////
+	constructor(options = {}, callback = undefined) {
+		super(options, callback);
+		if(!this.project instanceof BaseProject) {
+			throw new ErrorManager.classes.RequiredTypeError("BaseApp#project must be a BaseProject instance");
+		}
+		if(!this.router instanceof BaseRouter) {
+			throw new ErrorManager.classes.RequiredTypeError("BaseApp#router must be a BaseRouter instance");
+		}
+		if(!this.$app) {
+			this.$app = express();
+		}
+		if(!this.$router) {
+			this.$router = express.Router();
+		}
+	}
+	//////////////////////////////////////////////////////
+	getLoadMethods() {
+		return [
+			"stepSkipConditionally",
+			"stepLoadSettings",
+			"~stepLoadDatabases",
+			"stepLoadApp",
+			"stepLoadRequestPrototype",
+			"stepLoadResponsePrototype",
+			"stepLoadRouter",
+			"stepLoadServer",
+			"stepLoadSecureServer",
+		]
+	}
+	getStartMethods() {
+		return [
+			"stepStartServer",
+			"stepStartSecureServer",
+		]
+	}
+	//////////////////////////////////////////////////////
+	load(parameters = {}) {
+		return ReflectionUtils.gateway(this, this.getLoadMethods(), new ParametersManager(parameters));
+	}
+	start(parameters = {}) {
+		ReflectionUtils.gateway(this, this.getLoadMethods(), new ParametersManager(parameters));
+		return ReflectionUtils.gateway(this, this.getStartMethods(), new ParametersManager(parameters));
+	}
+	stepSkipConditionally(_) {}
+	stepLoadSettings(_) {}
+	async stepLoadDatabases(_) {}
+	stepLoadApp(_) {}
+	stepLoadRequestPrototype(_) {}
+	stepLoadResponsePrototype(_) {}
+	stepLoadRouter(_) {}
+	stepLoadServer(_) {}
+	stepLoadSecureServer(_) {}
+	async stepStartServer(_) {}
+	async stepStartSecureServer(_) {}
+}
+module.exports = BaseApp;
+
 # Filename: /src/core/app/App.js
-# Filename: /src/core/app/Router.js
+const BaseApp = require(__dirname + "/base/BaseApp.js");
+class App extends BaseApp {
+	get mainDatabaseFilepath() {
+		return process.env.PROJECT_ROOT + "/core/database/db.js";
+	}
+}
+module.exports = App;
+
+# Filename: /src/core/router/base/BaseRouter.js
+const importFresh = require("import-fresh");
+const App = require(process.env.PROJECT_ROOT + "/core/app/App.js");
+class BaseRouter {
+	static get defaultConfigureFile() {
+		throw new ErrorManager.MustOverrideError("BaseRouter[.constructor].defaultConfigureFile must be overriden");
+	}
+	static get defaultApp() {
+		return App;
+	}
+	mountRouter(router, path = "*", middleware = []) {
+		// @TODO
+	}
+	mountMiddleware(middleware, path = "*", middleware = []) {
+		// @TODO
+	}
+	mountController(controller, path = "*", middleware = []) {
+		// @TODO
+	}
+	configure() {
+		const router = importFresh(this.constructor.defaultConfigureFile);
+		this.$router = router;
+	}
+}
+module.exports = Project;
+
+# Filename: /src/core/router/CdnRouter.configure.js
+module.exports = function() {
+	// @TODO:
+};
+
+# Filename: /src/core/router/CdnRouter.js
+class CdnRouter extends BaseRouter {
+	static get defaultConfigureFile() {
+		return __dirname + "/CdnRouter.configure.js";
+	}
+}
+module.exports = CdnRouter;
+
+# Filename: /src/core/router/LiveRouter.configure.js
+module.exports = function() {
+	// @TODO:
+};
+# Filename: /src/core/router/LiveRouter.js
+class LiveRouter extends BaseRouter {
+	static get defaultConfigureFile() {
+		return __dirname + "/LiveRouter.configure.js";
+	}
+}
+module.exports = LiveRouter;
+
+# Filename: /src/core/router/RestRouter.configure.js
+module.exports = function() {
+	// @TODO:
+};
+
+# Filename: /src/core/router/RestRouter.js
+class RestRouter extends BaseRouter {
+	static get defaultConfigureFile() {
+		return __dirname + "/RestRouter.configure.js";
+	}
+}
+module.exports = RestRouter;
+
+# Filename: /src/core/router/WebRouter.configure.js
+module.exports = function() {
+	// @TODO:
+};
+
+# Filename: /src/core/router/WebRouter.js
+
+# Filename: /src/core/router/Router.js
+const BaseRouter = require(__dirname + "/base/BaseRouter.js");
+class Router extends BaseRouter {}
+module.exports = Router;
+
+# Filename: /src/core/router/Router.configure.js
+module.exports = function() {
+	// @TODO:
+};
+
 # Directory: /src/core/config
 # Filename: /src/core/config/database-schema.extension.json
 # Filename: /src/core/config/database-schema.json
@@ -124,6 +321,13 @@
 # Filename: /src/core/controller/controllers.js
 # Directory: /src/core/database
 # Filename: /src/core/database/db.js
+let connection = undefined;
+module.exports = new Promise((resolve, reject) => {
+	if(!connection) {
+		// @TODO: the process to get the connection goes here: set the connection variable
+	}
+	return resolve(connection);
+};
 # Filename: /src/core/database/db2.js
 # Filename: /src/core/database/db3.js
 # Directory: /src/core/error
@@ -133,8 +337,46 @@
 # Directory: /src/core/helper
 # Directory: /src/core/helper/base
 # Filename: /src/core/helper/base/Tools.js
-# Filename: /src/core/helper/base/BaseHelper.js
+class Tools {
+	static get(...toolNames) {
+		const tools = {};
+		toolNames.forEach(toolName => {
+			const tool = require(__dirname + "/../" + toolName + ".js");
+			tools[toolName] = tool;
+		});
+	}
+}
+module.exports = Tools;
 # Filename: /src/core/helper/AuthenticationManager.js
+const AuthenticationLogger = require(process.env.PROJECT_ROOT + "/core/helper/logger.js").create("AuthenticationManager: ", ["yellow", "bold"]);
+class DoesRequestQuery {
+	constructor(request) {
+		AuthenticationLogger.debug("DoesRequestQuery.constructor");
+		this.request = request;
+	}
+	havePermissionTo(permissionNameOrId) {
+		AuthenticationLogger.debug("DoesRequestQuery.havePermissionTo");
+		// @TODO
+	}
+	belongToCommunity(communityNameOrId) {
+		AuthenticationLogger.debug("DoesRequestQuery.belongToCommunity");
+		// @TODO
+	}
+	belongToRole(roleNameOrId) {
+		AuthenticationLogger.debug("DoesRequestQuery.belongToRole");
+		// @TODO
+	}
+}
+class AuthenticationManager {
+	static doesRequest(request) {
+		AuthenticationLogger.debug("doesRequest");
+		if(!SessionManager.hasRequestSession(request)) {
+			return false;
+		}
+		return new DoesRequestQuery(request);
+	}
+}
+module.exports = AuthenticationManager;
 # Filename: /src/core/helper/CheckManager.js
 # Filename: /src/core/helper/CliUtils.js
 # Filename: /src/core/helper/CollectionManager.js
@@ -146,6 +388,39 @@
 # Filename: /src/core/helper/ParametersManager.js
 # Filename: /src/core/helper/ReflectionManager.js
 # Filename: /src/core/helper/ResponseManager.js
+# Filename: /src/core/helper/SessionManager.js
+const SessionLogger = require(process.env.PROJECT_ROOT + "/core/helper/logger.js").create("SessionManager: ", ["yellow", "bold"]);
+class SessionManager {
+	static hasRequestSession(request) {
+		SessionLogger.debug("hasRequestSession");
+		// @TODO
+		return false;
+	}
+	async static startSessionRequest(request) {
+		SessionLogger.debug("startSessionRequest");
+		try {
+			if(this.hasRequestSession(request)) {
+				return;
+			}
+			// @TODO
+		} catch(error) {
+			throw error;
+		}
+	}
+	async static closeSession(request) {
+		SessionLogger.debug("closeSession");
+		try {
+			if(!this.hasRequestSession(request)) {
+				return true;
+			}
+			// @TODO
+		} catch(error) {
+			throw error;
+		}	
+	}
+
+}
+module.exports = SessionManager;
 # Filename: /src/core/helper/StoreManager.js
 # Filename: /src/core/helper/StringUtils.js
 # Filename: /src/core/helper/TemplateManager.js
@@ -171,11 +446,6 @@
 # Filename: /src/core/model/PermissionPerRole.js
 # Filename: /src/core/model/Role.js
 # Filename: /src/core/model/Session.js
-# Filename: /src/core/model/User.js
-# Directory: /src/core/project
-# Directory: /src/core/project/base
-# Filename: /src/core/project/base/BaseProject.js
-# Filename: /src/core/project/Project.js
 # Directory: /src/core/public
 # Directory: /src/core/public/rendered
 # Filename: /src/core/public/rendered/home.ejs
@@ -194,6 +464,7 @@
 # Directory: /src/core/query/base/BaseQuery.js
 # Filename: /src/core/query/InsertSessionByUserId.js
 # Filename: /src/core/query/SelectUserByNameOrEmail.js
+# Filename: /src/core/model/User.js
 # Directory: /src/core/store
 # Directory: /src/core/store/base
 # Filename: /src/core/store/base/BaseStore.js

@@ -157,11 +157,10 @@ function peg$parse(input, options) {
       peg$c13 = function(type, name, contents) {return {type, name, contents}},
       peg$c14 = peg$anyExpectation(),
       peg$c15 = function() {return text()},
-      peg$c16 = function() {return text().replace(/\r\n|\n/g,"")},
-      peg$c17 = "\n",
-      peg$c18 = peg$literalExpectation("\n", false),
-      peg$c19 = "\r\n",
-      peg$c20 = peg$literalExpectation("\r\n", false),
+      peg$c16 = "\n",
+      peg$c17 = peg$literalExpectation("\n", false),
+      peg$c18 = "\r\n",
+      peg$c19 = peg$literalExpectation("\r\n", false),
 
       peg$currPos          = 0,
       peg$savedPos         = 0,
@@ -601,7 +600,7 @@ function peg$parse(input, options) {
     }
     if (s1 !== peg$FAILED) {
       peg$savedPos = s0;
-      s1 = peg$c16();
+      s1 = peg$c15();
     }
     s0 = s1;
 
@@ -612,19 +611,19 @@ function peg$parse(input, options) {
     var s0;
 
     if (input.charCodeAt(peg$currPos) === 10) {
-      s0 = peg$c17;
+      s0 = peg$c16;
       peg$currPos++;
     } else {
       s0 = peg$FAILED;
-      if (peg$silentFails === 0) { peg$fail(peg$c18); }
+      if (peg$silentFails === 0) { peg$fail(peg$c17); }
     }
     if (s0 === peg$FAILED) {
-      if (input.substr(peg$currPos, 2) === peg$c19) {
-        s0 = peg$c19;
+      if (input.substr(peg$currPos, 2) === peg$c18) {
+        s0 = peg$c18;
         peg$currPos += 2;
       } else {
         s0 = peg$FAILED;
-        if (peg$silentFails === 0) { peg$fail(peg$c20); }
+        if (peg$silentFails === 0) { peg$fail(peg$c19); }
       }
     }
 

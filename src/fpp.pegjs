@@ -34,5 +34,5 @@ L = "# Project:" s:S* EOS* {return generateTree(s)}
 S = F
 F = EOS+ "# " type:("Filename"/"Directory") ":" [ ]* name:FN contents:FC {return {type, name, contents}}
 FN = (!(EOS).)+ {return text()}
-FC = (!(F).)* {return text().replace(/\r\n|\n/g,"")}
+FC = (!(F).)* {return text()}
 EOS = "\n" / "\r\n"
